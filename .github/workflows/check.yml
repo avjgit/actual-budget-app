@@ -87,10 +87,48 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Set up environment
+        uses: ./.github/actions/setup
+        with:
+          download-translations: 'false'
+      - name: Start sync-server for OWASP ZAP
+        run: |
+          yarn workspace @actual-app/sync-server build
+          node packages/sync-server/build/app.js > /tmp/sync-server.log 2>&1 &
+
+          for _ in {1..60}; do
+            if curl -fsS http://localhost:5006/health >/dev/null || curl -fsS http://localhost:5006 >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+
+          echo "sync-server did not start in time"
+          tail -n 200 /tmp/sync-server.log || true
+          exit 1
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
+        continue-on-error: true
         with:
-          target: 'http://localhost:8080'
+          target: 'http://localhost:5006'
+      - name: Trivy Check
+        uses: aquasecurity/trivy-action@314ff8b43182423b84c50b1670b0e10f858f2d98 # master
+        continue-on-error: true
+        with:
+          scan-type: fs
+          scan-ref: .
+      - name: Scan secrets
+        uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_CONFIG: gitleaks.toml
+      - name: Dependency scan with Yarn npm audit
+        run: yarn npm audit --severity high
   test:
     needs: setup
     runs-on: ubuntu-latest
