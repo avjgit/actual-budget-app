@@ -123,6 +123,8 @@ jobs:
       - name: Scan secrets
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Dependency scan with Yarn npm audit
         run: yarn npm audit --severity high
   test:
