@@ -1,0 +1,8 @@
+title = "Actual custom gitleaks config"
+
+[[rules]]
+id = "generic-password-assignment"
+description = "Detect inline PASSWORD=... assignments"
+regex = '''(?m)\bPASSWORD\s*=\s*["']?([0-9A-Za-z!@#$%^&*._-]{6,})["']?'''
+secretGroup = 1
+tags = ["password", "generic"]
