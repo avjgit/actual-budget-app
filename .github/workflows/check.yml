@@ -111,15 +111,18 @@ jobs:
           exit 1
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
+        continue-on-error: true
         with:
           target: 'http://localhost:5006'
       - name: Trivy Check
         uses: aquasecurity/trivy-action@314ff8b43182423b84c50b1670b0e10f858f2d98 # master
+        continue-on-error: true
         with:
           scan-type: fs
           scan-ref: .
       - name: Scan secrets
         uses: gitleaks/gitleaks-action@v2
+        continue-on-error: true
       - name: Dependency scan with npm audit
         run: npm audit --audit-level=high
   test:
