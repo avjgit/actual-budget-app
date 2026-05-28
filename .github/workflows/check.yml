@@ -87,10 +87,16 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Trivy Check
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'avjgit/actual-budget-app:latest'
       - name: OWASP ZAP Scan
         uses: zaproxy/action-baseline@v0.11.0
         with:
           target: 'http://localhost:8080'
+      - name: Scan secrets
+        uses: gitleaks/gitleaks-action@v2
   test:
     needs: setup
     runs-on: ubuntu-latest
