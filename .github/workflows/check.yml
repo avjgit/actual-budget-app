@@ -123,8 +123,8 @@ jobs:
       - name: Scan secrets
         uses: gitleaks/gitleaks-action@v2
         continue-on-error: true
-      - name: Dependency scan with npm audit
-        run: npm audit --audit-level=high
+      - name: Dependency scan with Yarn npm audit
+        run: yarn npm audit --severity high
   test:
     needs: setup
     runs-on: ubuntu-latest
